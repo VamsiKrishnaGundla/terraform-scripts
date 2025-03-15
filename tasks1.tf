@@ -1,4 +1,17 @@
+/*
 
+Task 1: Create a VPC with Public & Private Subnets
+✅ Objective: Learn about VPC, subnets, and CIDR blocks.
+✅ Steps:
+
+Create a VPC with CIDR block 10.0.0.0/16.
+Create one public and one private subnet.
+Attach an Internet Gateway to allow internet access.
+Attach Route Tables for public and private subnets.
+Attach Nat gateway.
+
+
+*/
 
 
 variable "v_vpc_cidr" {
@@ -69,3 +82,27 @@ resource "aws_route_table_association" "sn1rt1" {
   subnet_id      = element(aws_subnet.pub_sn.*.id, count.index)
 
 }
+resource "aws_eip" "EIP" {
+  
+}
+
+resource "aws_nat_gateway" "NGW" {
+subnet_id = aws_subnet.pvt_sn[0].id
+allocation_id =aws_eip.EIP.id
+}
+
+resource "aws_route_table" "RT2" {
+  vpc_id = aws_vpc.VPC11.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.NGW.id
+  }
+}
+resource "aws_route_table_association" "sn2rt2" {
+  count          = length(var.v_pvt_sn_cidr)
+  route_table_id = aws_route_table.RT2.id
+  subnet_id      = element(aws_subnet.pvt_sn.*.id, count.index)
+
+}
+
